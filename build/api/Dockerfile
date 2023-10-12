@@ -9,7 +9,7 @@ RUN go build -o api cmd/main.go
 
 FROM build AS test
 
-CMD go test ./... -v -cover
+CMD go test ./... -cover -coverprofile=./coverage/coverage.txt -covermode=atomic
 
 FROM alpine AS release
 
