@@ -6,9 +6,9 @@ services:
       dockerfile: ../build/api/Dockerfile
       target: test
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}test?sslmode=disable
+      - DATABASE_URL=postgres://test:password@db:5432/tunes?sslmode=disable
       - SECRET_TOKEN=testsecret
-      - AUTH_DATABASE_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@auth-db:27017/auth?&authSource=admin
+      - AUTH_DATABASE_URL=mongodb://test:password@auth-db:27017/auth?&authSource=admin
     depends_on:
       db:
         condition: service_healthy
@@ -18,13 +18,13 @@ services:
   db:
     image: postgres
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}test
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=tunes
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=password
     ports:
       - '5432:5432'
     healthcheck:
-      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}test
+      test: pg_isready -U test -d tunes
       interval: 2s
       timeout: 3s
       retries: 10
@@ -33,8 +33,8 @@ services:
   auth-db:
     image: mongo
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=test
+      - MONGO_INITDB_ROOT_PASSWORD=password
     ports:
       - '27017:27017'
     command: --quiet

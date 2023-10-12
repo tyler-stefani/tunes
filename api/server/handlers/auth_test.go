@@ -98,7 +98,7 @@ func TestHandleRegistration(t *testing.T) {
 }
 
 func TestHandleLogin(t *testing.T) {
-	if os.Getenv("SECRET_KEY") == "" {
+	if os.Getenv("SECRET_TOKEN") == "" {
 		t.Skip("missing secret key")
 	}
 
@@ -209,7 +209,7 @@ func TestHandleLogin(t *testing.T) {
 }
 
 func TestHandleRefresh(t *testing.T) {
-	if os.Getenv("SECRET_KEY") == "" {
+	if os.Getenv("SECRET_TOKEN") == "" {
 		t.Skip("missing secret key")
 	}
 

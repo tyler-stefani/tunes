@@ -40,7 +40,7 @@ func TestValidatePassword(t *testing.T) {
 }
 
 func TestCreateAccessToken(t *testing.T) {
-	if os.Getenv("SECRET_KEY") == "" {
+	if os.Getenv("SECRET_TOKEN") == "" {
 		t.Skip("missing secret key")
 	}
 
@@ -50,7 +50,7 @@ func TestCreateAccessToken(t *testing.T) {
 }
 
 func TestValidateToken(t *testing.T) {
-	if os.Getenv("SECRET_KEY") == "" {
+	if os.Getenv("SECRET_TOKEN") == "" {
 		t.Skip("missing secret key")
 	}
 
@@ -97,7 +97,7 @@ func TestValidateToken(t *testing.T) {
 }
 
 func TestShouldRefresh(t *testing.T) {
-	if os.Getenv("SECRET_KEY") == "" {
+	if os.Getenv("SECRET_TOKEN") == "" {
 		t.Skip("missing secret key")
 	}
 
