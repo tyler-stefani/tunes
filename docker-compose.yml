@@ -1,0 +1,55 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: ../build/api/Dockerfile
+      target: release
+    ports:
+      - '8080:8080'
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+      - SECRET_TOKEN=${SECRET_TOKEN}
+      - AUTH_DATABASE_URL=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@auth-db:27017/auth?&authSource=admin
+    depends_on:
+      db:
+        condition: service_healthy
+      auth-db:
+        condition: service_healthy
+
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - '5432'
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 2s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  auth-db:
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    volumes:
+      - auth-data:/data/db
+    ports:
+      - '27017'
+    command: --quiet
+    healthcheck:
+      test: mongosh --eval 'db.runCommand("ping").ok' --quiet
+      interval: 2s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  db-data:
+  auth-data:

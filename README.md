@@ -1,2 +1,3 @@
 # tunes
-An app that tracks user's music listening data
+
+An app that tracks a user's music listening data
