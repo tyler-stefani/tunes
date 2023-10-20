@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -118,7 +119,11 @@ func (pg *PGDB) GetArtist(name string) (Artist, error) {
 
 	var a Artist
 	if err := row.Scan(&a); err != nil {
-		return Artist{}, fmt.Errorf("error selecting artist: %w", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Artist{}, nil
+		} else {
+			return Artist{}, fmt.Errorf("error selecting artist: %w", err)
+		}
 	}
 
 	return a, nil
@@ -131,18 +136,21 @@ func (pg *PGDB) GetProject(key uint64) (Project, error) {
 
 	var p Project
 	if err := row.Scan(&p); err != nil {
-		return Project{}, fmt.Errorf("error selecting project: %w", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Project{}, nil
+		} else {
+			return Project{}, fmt.Errorf("error selecting project: %w", err)
+		}
 	}
 
 	return p, nil
 }
 
-// TODO: maybe make this query work for tracks with no projects
 func (pg *PGDB) GetTrack(key uint64) (Track, error) {
-	stmt := `SELECT t.id, t.title, t.primary_project_id, array_agg(p.id) AS project_ids
+	stmt := `SELECT t.id, t.title, COALESCE(t.primary_project_id, 0), ARRAY_REMOVE(ARRAY_AGG(p.id), null) AS project_ids
 	FROM track t
-	JOIN project_track pt ON t.id = pt.track_id
-	JOIN project p ON pt.project_id = p.id
+	LEFT JOIN project_track pt ON t.id = pt.track_id
+	LEFT JOIN project p ON pt.project_id = p.id
 	WHERE t.id = $1
 	GROUP BY t.id, t.title, t.primary_project_id;`
 
@@ -150,7 +158,11 @@ func (pg *PGDB) GetTrack(key uint64) (Track, error) {
 
 	var t Track
 	if err := row.Scan(&t.ID, &t.Title, &t.PrimaryProjectID, &t.ProjectIDs); err != nil {
-		return Track{}, fmt.Errorf("error selecting track: %w", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Track{}, nil
+		} else {
+			return Track{}, fmt.Errorf("error selecting track: %w", err)
+		}
 	}
 
 	return t, nil
