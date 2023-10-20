@@ -9,8 +9,7 @@ import (
 func TestDBIntegration(t *testing.T) {
 	testDBURL := os.Getenv("DATABASE_URL")
 
-	err := Migrate(testDBURL)
-	if err != nil {
+	if err := Migrate(testDBURL); err != nil {
 		t.Skip("skipping integration test")
 	}
 
@@ -27,6 +26,10 @@ func TestDBIntegration(t *testing.T) {
 	_, err = db.GetUser("test")
 	if err != nil {
 		t.Fatalf("%s", err.Error())
+	}
+
+	if a, err := db.GetArtist("Olivia Rodrigo"); !a.IsEmpty() || err != nil {
+		t.Fatalf("empty artist not working correctly")
 	}
 
 	_, err = db.CreateArtist("Olivia Rodrigo")
@@ -50,9 +53,17 @@ func TestDBIntegration(t *testing.T) {
 		t.Error(err)
 	}
 
-	track, err := db.CreateTrack(CreateHash("bad idea right?", []string{"Olivia Rodrigo"}), "bad idea right?", []uint64{a.ID})
+	_, err = db.CreateTrack(CreateHash("bad idea right?", []string{"Olivia Rodrigo"}), "bad idea right?", []uint64{a.ID})
 	if err != nil {
 		t.Error(err)
+	}
+
+	track, err := db.GetTrack(CreateHash("bad idea right?", []string{"Olivia Rodrigo"}))
+	if err != nil {
+		t.Error(err)
+	}
+	if (track.Title != "bad idea right?") {
+		t.Fatalf("could not get track with no projects")
 	}
 
 	err = db.UpdateTrack(track.ID, p.ID, true)
